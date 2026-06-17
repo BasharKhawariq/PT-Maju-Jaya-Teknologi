@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum StatusHadir {
+  hadir
+  alpa
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+
+  createdAt DateTime @default(now())
+}
+
+model Jabatan {
+  id          Int       @id @default(autoincrement())
+  namaJabatan String
+  gajiPokok   Decimal   @db.Decimal(12,2)
+
+  pegawai     Pegawai[]
+}
+
+model Pegawai {
+  id          Int       @id @default(autoincrement())
+  nama        String
+  gelar       String
+
+  jabatanId   Int
+  jabatan     Jabatan   @relation(fields: [jabatanId], references: [id])
+
+  presensi    Presensi[]
+}
+
+model Presensi {
+  id                Int          @id @default(autoincrement())
+
+  pegawaiId         Int
+  pegawai           Pegawai      @relation(fields: [pegawaiId], references: [id])
+
+  tanggal           DateTime
+
+  statusHadir       StatusHadir
+
+  jamMasuk          String?
+  jamKeluar         String?
+
+  jamMasukNormal    String @default("09:00:00")
+  jamKeluarNormal   String @default("17:00:00")
+
+  terlambatMenit    Int @default(0)
+  lemburMenit       Int @default(0)
+}
